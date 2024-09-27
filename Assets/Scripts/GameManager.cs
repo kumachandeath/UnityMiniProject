@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
         }
 
         // 로딩이 끝나면 로딩 UI 비활성화
-        loadingScreen.SetActive(false);
+        if (loadingScreen != null)
+        {
+            loadingScreen.SetActive(false);
+        }
     }
 }

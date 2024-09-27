@@ -17,6 +17,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.2f;
     [SerializeField] private LayerMask groundLayer; // 바닥을 나타내는 레이어
 
+    [Header("Raycast Settings")]
+    [SerializeField] private float rayDistance = 0.5f; // 벽 감지 거리
+
+    [Header("Physics Materials")]
+    [SerializeField] private PhysicMaterial normalMaterial; // 기본 물리 재질
+    [SerializeField] private PhysicMaterial noFrictionMaterial; // 마찰력 없는 물리 재질
+
     private Vector3 moveDirection;
 
     [SerializeField] private bool isGrounded;
@@ -73,7 +80,17 @@ public class PlayerController : MonoBehaviour
         else
         {
             // 수평 방향 속도 제거
-            rigid.velocity = new Vector3(0,rigid.velocity.y,0);
+            rigid.velocity = new Vector3(0, rigid.velocity.y, 0);
+        }
+
+        if (IsWallDetected())
+        {
+            // 벽에 붙었을 때 마찰을 제거
+            ApplyNoFriction();
+        }
+        else
+        {
+            RestoreNormalFriction();
         }
     }
 
@@ -89,6 +106,38 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
+    private bool IsWallDetected()
+    {
+        // 플레이어가 이동하는 방향으로 Ray를 쏘아 벽 감지
+        RaycastHit hit;
+        if (Physics.Raycast(groundCheck.position, moveDirection, out hit, rayDistance, groundLayer))
+        {
+            Debug.Log("벽 감지됨: " + hit.collider.name);
+            return true;
+        }
+        return false;
+    }
+
+    private void ApplyNoFriction()
+    {
+        // 벽에 붙으면 마찰력을 제거한 물리 재질로 변경
+        Collider collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            collider.material = noFrictionMaterial;
+        }
+    }
+
+    private void RestoreNormalFriction()
+    {
+        // 벽을 벗어나면 다시 기본 마찰력으로 복구
+        Collider collider = GetComponent<Collider>();
+        if (collider != null)
+        {
+            collider.material = normalMaterial;
+        }
+    }
+
     private void OnDrawGizmosSelected()
     {
         // 에디터에서 Ground Check 범위를 시각화
@@ -97,6 +146,10 @@ public class PlayerController : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
+
+        // Raycast를 시각화
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(groundCheck.position, moveDirection * rayDistance);
     }
 
     private void RotateTowardsCameraDirection()

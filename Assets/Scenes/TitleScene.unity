@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 233359586}
   - component: {fileID: 233359585}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Loading Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -362,7 +362,7 @@ GameObject:
   - component: {fileID: 466467049}
   - component: {fileID: 466467050}
   m_Layer: 5
-  m_Name: Slider
+  m_Name: Loading Bar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -454,7 +454,7 @@ GameObject:
   - component: {fileID: 744390167}
   - component: {fileID: 744390166}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Loading Screen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -568,7 +568,7 @@ GameObject:
   - component: {fileID: 1257339901}
   - component: {fileID: 1257339900}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Start Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
