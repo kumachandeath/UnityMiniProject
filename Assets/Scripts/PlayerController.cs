@@ -1,4 +1,5 @@
 using Cinemachine;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -24,9 +25,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private PhysicMaterial normalMaterial; // 기본 물리 재질
     [SerializeField] private PhysicMaterial noFrictionMaterial; // 마찰력 없는 물리 재질
 
-    private Vector3 moveDirection;
+    [Header("Slope Settings")]
+    [SerializeField] private float maxSlopeAngle = 45f;  // 최대 경사 각도
+    [SerializeField] private float slopeForce = 100f;      // 경사면에서 추가 힘
 
+    private Vector3 moveDirection;
     [SerializeField] private bool isGrounded;
+    [SerializeField] private bool isOnSlope;
 
     private void Start()
     {
@@ -49,6 +54,7 @@ public class PlayerController : MonoBehaviour
     {
         Move();
         RotateTowardsCameraDirection();
+        ApplySlopeForce();
     }
 
     private void HandleMovementInput()
@@ -71,7 +77,12 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (moveDirection.magnitude >= 0.1f)
+        if (moveDirection.magnitude >= 0.1f && IsOnSlope())
+        {
+            Vector3 slopeDirection = Vector3.ProjectOnPlane(moveDirection, GetSlopeNormal());
+            rigid.velocity = slopeDirection * moveSpeed + new Vector3(0, rigid.velocity.y, 0);
+        }
+        else if (moveDirection.magnitude >= 0.1f)
         {
             // 이동 벡터에 따라 속도 적용
             Vector3 movement = moveDirection * moveSpeed;
@@ -96,14 +107,51 @@ public class PlayerController : MonoBehaviour
 
     private void Jump()
     {
-        // 점프력 적용
-        rigid.velocity = new Vector3(rigid.velocity.x, jumpForce, rigid.velocity.z);
+
+        if (isGrounded)
+        {
+            // 점프할 때 Y축 속도를 0으로 초기화하여 축적된 속도 제거
+            rigid.velocity = new Vector3(rigid.velocity.x, 0f, rigid.velocity.z);
+
+            // 그 후 점프력을 적용
+            rigid.velocity += Vector3.up * jumpForce;
+        }
     }
 
     private void CheckGroundStatus()
     {
         // 플레이어가 바닥에 있는지 확인 (원형 캐스팅을 사용하여 바닥 체크)
         isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
+    }
+
+    private void ApplySlopeForce()
+    {
+        if (IsOnSlope() && !Input.GetButton("Jump"))
+        {
+            rigid.AddForce(Vector3.down * slopeForce);  // 경사면에서 튀어오르는 현상 방지
+        }
+    }
+
+    private bool IsOnSlope()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.3f, groundLayer))
+        {
+            Debug.Log($"{hit.transform.rotation}");
+            float angle = Vector3.Angle(Vector3.up, hit.normal);
+            return angle <= maxSlopeAngle;
+        }
+        return false;
+    }
+
+    private Vector3 GetSlopeNormal()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.3f, groundLayer))
+        {
+            return hit.normal;
+        }
+        return Vector3.up;
     }
 
     private bool IsWallDetected()
@@ -161,6 +209,14 @@ public class PlayerController : MonoBehaviour
             cameraForward.y = 0; // Y축 고정
             Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
             rigid.MoveRotation(Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime));
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Goal"))
+        {
+            GameManager.instance.PlayerReachedGoal();
         }
     }
 }
