@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI endGameMessage; // 골인 메시지 텍스트
 
     [Header("Title UI")]
+    public GameObject startGameScreen;
     public GameObject startButton; // 타이틀 화면의 시작 버튼
 
     private bool isGameOver = false; // 게임 종료 상태 확인용
@@ -97,6 +98,9 @@ public class GameManager : MonoBehaviour
 
         // 게임 상태 초기화
         ResetGameState();
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     // 게임 상태 초기화 메서드
@@ -106,6 +110,11 @@ public class GameManager : MonoBehaviour
         if (endGameScreen != null)
         {
             endGameScreen.SetActive(false);
+        }
+
+        if (startGameScreen != null)
+        {
+            startGameScreen.SetActive(true);
         }
 
         // 타이틀 화면의 시작 버튼 재활성화

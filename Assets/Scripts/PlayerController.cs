@@ -110,6 +110,9 @@ public class PlayerController : MonoBehaviour
 
         if (isGrounded)
         {
+            // 경사면에서 마찰이 없는 상태에서의 점프력 버그 수정용
+            RestoreNormalFriction();
+
             // 점프할 때 Y축 속도를 0으로 초기화하여 축적된 속도 제거
             rigid.velocity = new Vector3(rigid.velocity.x, 0f, rigid.velocity.z);
 
